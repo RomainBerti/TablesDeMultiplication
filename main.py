@@ -11,7 +11,14 @@ from datetime import datetime
 class MultiplicationApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Révision des tables de multiplication")
+        self.root.title("Révision des tables")
+        self.mode = tk.StringVar(value="multiplication")
+        mode_frame = tk.Frame(root)
+        mode_frame.pack(pady=10)
+
+        tk.Label(mode_frame, text="Mode :", font=("Arial", 20)).pack(side="left", padx=10)
+        tk.Radiobutton(mode_frame, text="Multiplication", variable=self.mode, value="multiplication", font=("Arial", 20)).pack(side="left")
+        tk.Radiobutton(mode_frame, text="Addition", variable=self.mode, value="addition", font=("Arial", 20)).pack(side="left")
 
         # Sélection des tables
         self.table_vars = []
@@ -44,7 +51,7 @@ class MultiplicationApp:
         self.sound_checkbox.pack(pady=5)
 
     def reset_history(self):
-        results_file = "results.json"
+        results_file = "results.json" if self.mode.get() == "multiplication" else "results_addition.json"
         if os.path.exists(results_file):
             os.remove(results_file)
             messagebox.showinfo("Historique réinitialisé", "Les résultats précédents ont été supprimés.")
@@ -66,7 +73,7 @@ class MultiplicationApp:
         for _ in range(self.nb_questions_total):
             a = random.choice(self.selected_tables)
             b = random.randint(1, 10)
-            self.questions.append((a, b))
+            self.questions.append((a, b, self.mode.get()))
 
         self.show_next_question()
 
@@ -79,7 +86,7 @@ class MultiplicationApp:
             self.finish_quiz()
             return
 
-        a, b = self.questions[self.current_question]
+        a, b, mode = self.questions[self.current_question]
         self.answer_frame = tk.Frame(self.root, name="question_frame")
         self.answer_frame.pack(pady=10)
 
@@ -92,7 +99,8 @@ class MultiplicationApp:
         qa_frame = tk.Frame(self.answer_frame)
         qa_frame.pack(pady=5)
 
-        self.question_label = tk.Label(qa_frame, text=f"{a} x {b} = ", font=("Arial", 20))
+        operator = "x" if mode == "multiplication" else "+"
+        self.question_label = tk.Label(qa_frame, text=f"{a} {operator} {b} = ", font=("Arial", 20))
         self.question_label.pack(side="left")
 
         self.answer_entry = tk.Entry(qa_frame, font=("Arial", 20), width=5)
@@ -104,7 +112,11 @@ class MultiplicationApp:
         self.feedback_label = tk.Label(self.answer_frame, text="", font=("Arial", 20))
         self.feedback_label.pack(pady=5)
 
-        self.correct_result = a * b
+        if mode == "multiplication":
+            self.correct_result = a * b
+        else:
+            self.correct_result = a + b
+
         self.answer_entry.focus_set()
         self.root.bind('<Return>', lambda event: self.check_answer())
 
@@ -136,10 +148,11 @@ class MultiplicationApp:
             "score": self.correct_answers,
             "total": self.nb_questions_total,
             "duration": duration,
-            "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "tables": self.selected_tables
         }
 
-        results_file = "results.json"
+        results_file = "results.json" if self.mode.get() == "multiplication" else "results_addition.json"
         results = []
         if os.path.exists(results_file):
             with open(results_file, "r") as f:
@@ -152,16 +165,25 @@ class MultiplicationApp:
             json.dump(results, f, indent=2)
 
         ranking = results.index(result) + 1
+        success_perfect = self.correct_answers == self.nb_questions_total
+        if success_perfect and self.sound_enabled.get():
+            os.system("afplay /System/Library/Sounds/Ping.aiff &")
+
         result_window = tk.Toplevel(self.root)
         result_window.title("Résultats du quiz")
 
         tk.Label(result_window, text=f"Score : {self.correct_answers}/{self.nb_questions_total}", font=("Arial", 20)).pack(pady=2)
         tk.Label(result_window, text=f"Temps : {duration} secondes", font=("Arial", 20)).pack(pady=2)
         tk.Label(result_window, text=f"Classement : #{ranking} sur {len(results)}", font=("Arial", 20, "bold")).pack(pady=5)
+
+        if success_perfect:
+            tk.Label(result_window, text="🎉 Félicitations pour le score parfait ! 🎉", font=("Arial", 22, "bold"), fg="blue").pack(pady=10)
+
         tk.Label(result_window, text="Historique des tests :", font=("Arial", 20, "underline")).pack(pady=(10, 2))
 
-        tree = ttk.Treeview(result_window, columns=("datetime", "score", "total", "duration"), show="headings")
+        tree = ttk.Treeview(result_window, columns=("datetime", "tables", "score", "total", "duration"), show="headings")
         tree.heading("datetime", text="Date/Heure", anchor='center')
+        tree.heading("tables", text="Tables", anchor='center')
         tree.heading("score", text="Score", anchor='center')
         tree.heading("total", text="Total", anchor='center')
         tree.heading("duration", text="Durée", anchor='center')
@@ -170,7 +192,8 @@ class MultiplicationApp:
             minutes = int(r["duration"]) // 60
             seconds = int(r["duration"]) % 60
             formatted_duration = f"{minutes:02d}:{seconds:02d}"
-            tree.insert("", "end", values=(r["datetime"], r["score"], r["total"], formatted_duration))
+            tables_str = ", ".join(str(t) for t in r.get("tables", []))
+            tree.insert("", "end", values=(r["datetime"], tables_str, r["score"], r["total"], formatted_duration))
 
         tree.pack(padx=10, pady=10)
 
