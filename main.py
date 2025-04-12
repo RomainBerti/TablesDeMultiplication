@@ -5,6 +5,7 @@ import random
 import time
 import json
 import os
+import sys
 from datetime import datetime
 
 class MultiplicationApp:
@@ -14,12 +15,12 @@ class MultiplicationApp:
 
         # Sélection des tables
         self.table_vars = []
-        tables_frame = tk.LabelFrame(root, text="Choisis les tables à réviser")
+        tables_frame = tk.LabelFrame(root, text="Choisis les tables à réviser", font=("Arial", 20))
         tables_frame.pack(padx=10, pady=5)
 
         for i in range(1, 11):
             var = tk.IntVar()
-            chk = tk.Checkbutton(tables_frame, text=f"Table de {i}", variable=var)
+            chk = tk.Checkbutton(tables_frame, text=f"Table de {i}", variable=var, font=("Arial", 20))
             chk.grid(row=0, column=i-1, padx=5)
             self.table_vars.append(var)
 
@@ -27,16 +28,20 @@ class MultiplicationApp:
         options_frame = tk.Frame(root)
         options_frame.pack(padx=10, pady=5)
 
-        tk.Label(options_frame, text="Nombre de questions :").grid(row=0, column=0)
-        self.nb_questions = tk.Spinbox(options_frame, from_=1, to=50, width=5)
+        tk.Label(options_frame, text="Nombre de questions :", font=("Arial", 20)).grid(row=0, column=0)
+        self.nb_questions = tk.Spinbox(options_frame, from_=1, to=50, width=5, font=("Arial", 20))
         self.nb_questions.grid(row=0, column=1, padx=5)
 
         # Bouton Commencer
-        self.start_button = tk.Button(root, text="Commencer", command=self.start_quiz)
+        self.start_button = tk.Button(root, text="Commencer", command=self.start_quiz, font=("Arial", 20))
         self.start_button.pack(pady=10)
 
-        self.reset_button = tk.Button(root, text="Réinitialiser l'historique", command=self.reset_history)
+        self.reset_button = tk.Button(root, text="Réinitialiser l'historique", command=self.reset_history, font=("Arial", 20))
         self.reset_button.pack(pady=5)
+
+        self.sound_enabled = tk.IntVar()
+        self.sound_checkbox = tk.Checkbutton(root, text="Activer les sons", variable=self.sound_enabled, font=("Arial", 20))
+        self.sound_checkbox.pack(pady=5)
 
     def reset_history(self):
         results_file = "results.json"
@@ -78,20 +83,30 @@ class MultiplicationApp:
         self.answer_frame = tk.Frame(self.root, name="question_frame")
         self.answer_frame.pack(pady=10)
 
-        self.question_label = tk.Label(self.answer_frame, text=f"{a} x {b} = ?")
-        self.question_label.pack()
+        remaining = self.nb_questions_total - self.current_question
+        self.remaining_label = tk.Label(self.answer_frame, text=f"Question {self.current_question + 1} sur {self.nb_questions_total}", font=("Arial", 20))
+        self.remaining_label.pack(pady=2)
 
-        self.answer_entry = tk.Entry(self.answer_frame)
-        self.answer_entry.pack()
+        tk.Label(self.answer_frame, text="", font=("Arial", 10)).pack(pady=5)
 
-        self.validate_button = tk.Button(self.answer_frame, text="Valider", command=self.check_answer)
+        qa_frame = tk.Frame(self.answer_frame)
+        qa_frame.pack(pady=5)
+
+        self.question_label = tk.Label(qa_frame, text=f"{a} x {b} = ", font=("Arial", 20))
+        self.question_label.pack(side="left")
+
+        self.answer_entry = tk.Entry(qa_frame, font=("Arial", 20), width=5)
+        self.answer_entry.pack(side="left")
+
+        self.validate_button = tk.Button(self.answer_frame, text="Valider", command=self.check_answer, font=("Arial", 20))
         self.validate_button.pack()
 
-        self.feedback_label = tk.Label(self.answer_frame, text="", font=("Arial", 12))
+        self.feedback_label = tk.Label(self.answer_frame, text="", font=("Arial", 20))
         self.feedback_label.pack(pady=5)
 
         self.correct_result = a * b
         self.answer_entry.focus_set()
+        self.root.bind('<Return>', lambda event: self.check_answer())
 
     def check_answer(self):
         try:
@@ -99,8 +114,12 @@ class MultiplicationApp:
             if user_answer == self.correct_result:
                 self.correct_answers += 1
                 self.feedback_label.config(text="✔ Bonne réponse !", fg="green")
+                if self.sound_enabled.get():
+                    os.system("afplay /System/Library/Sounds/Glass.aiff &")
             else:
                 self.feedback_label.config(text=f"✘ Faux ! C'était {self.correct_result}", fg="red")
+                if self.sound_enabled.get():
+                    os.system("afplay /System/Library/Sounds/Basso.aiff &")
         except ValueError:
             self.feedback_label.config(text="✘ Entrée invalide", fg="red")
             return
@@ -136,19 +155,22 @@ class MultiplicationApp:
         result_window = tk.Toplevel(self.root)
         result_window.title("Résultats du quiz")
 
-        tk.Label(result_window, text=f"Score : {self.correct_answers}/{self.nb_questions_total}", font=("Arial", 12)).pack(pady=2)
-        tk.Label(result_window, text=f"Temps : {duration} secondes", font=("Arial", 12)).pack(pady=2)
-        tk.Label(result_window, text=f"Classement : #{ranking} sur {len(results)}", font=("Arial", 12, "bold")).pack(pady=5)
-        tk.Label(result_window, text="Historique des tests :", font=("Arial", 11, "underline")).pack(pady=(10, 2))
+        tk.Label(result_window, text=f"Score : {self.correct_answers}/{self.nb_questions_total}", font=("Arial", 20)).pack(pady=2)
+        tk.Label(result_window, text=f"Temps : {duration} secondes", font=("Arial", 20)).pack(pady=2)
+        tk.Label(result_window, text=f"Classement : #{ranking} sur {len(results)}", font=("Arial", 20, "bold")).pack(pady=5)
+        tk.Label(result_window, text="Historique des tests :", font=("Arial", 20, "underline")).pack(pady=(10, 2))
 
         tree = ttk.Treeview(result_window, columns=("datetime", "score", "total", "duration"), show="headings")
-        tree.heading("datetime", text="Date/Heure")
-        tree.heading("score", text="Score")
-        tree.heading("total", text="Total")
-        tree.heading("duration", text="Durée (s)")
+        tree.heading("datetime", text="Date/Heure", anchor='center')
+        tree.heading("score", text="Score", anchor='center')
+        tree.heading("total", text="Total", anchor='center')
+        tree.heading("duration", text="Durée", anchor='center')
 
-        for r in reversed(results):
-            tree.insert("", "end", values=(r["datetime"], r["score"], r["total"], r["duration"]))
+        for r in results:
+            minutes = int(r["duration"]) // 60
+            seconds = int(r["duration"]) % 60
+            formatted_duration = f"{minutes:02d}:{seconds:02d}"
+            tree.insert("", "end", values=(r["datetime"], r["score"], r["total"], formatted_duration))
 
         tree.pack(padx=10, pady=10)
 
