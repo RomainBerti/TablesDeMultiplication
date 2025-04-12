@@ -114,17 +114,17 @@ class MultiplicationApp:
             if user_answer == self.correct_result:
                 self.correct_answers += 1
                 self.feedback_label.config(text="✔ Bonne réponse !", fg="green")
+                self.root.after(1000, self.next_question_step)
                 if self.sound_enabled.get():
                     os.system("afplay /System/Library/Sounds/Glass.aiff &")
             else:
-                self.feedback_label.config(text=f"✘ Faux ! C'était {self.correct_result}", fg="red")
+                self.feedback_label.config(text=f"✘ Faux ! C'était {self.correct_result}", fg="red", font=("Arial", 28))
+                self.root.after(2000, self.next_question_step)
                 if self.sound_enabled.get():
                     os.system("afplay /System/Library/Sounds/Basso.aiff &")
         except ValueError:
             self.feedback_label.config(text="✘ Entrée invalide", fg="red")
             return
-
-        self.root.after(1000, self.next_question_step)
 
     def next_question_step(self):
         self.current_question += 1
