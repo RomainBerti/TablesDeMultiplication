@@ -1,0 +1,32 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  padding: 20px;
+  color: #333;
+}
+.container {
+  max-width: 700px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+.section {
+  margin: 15px 0;
+}
+.hidden {
+  display: none;
+}
+#scoreTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+#scoreTable th, #scoreTable td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+.highlight {
+  background-color: #ffff99;
+}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Révision des tables</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Révision des tables 🧠</h1>
+    
+    <label for="nameInput">Prénom :</label>
+    <input type="text" id="nameInput" placeholder="Entre ton prénom">
+
+    <div class="section">
+      <p>Mode :</p>
+      <label><input type="radio" name="mode" value="multiplication" checked> Multiplication</label>
+      <label><input type="radio" name="mode" value="addition"> Addition</label>
+    </div>
+
+    <div class="section">
+      <p>Choisis les tables :</p>
+      <div id="tableSelectors"></div>
+    </div>
+
+    <div class="section">
+      <label for="questionCount">Nombre de questions :</label>
+      <input type="number" id="questionCount" value="10" min="1" max="50">
+    </div>
+
+    <button id="startButton">Commencer</button>
+
+    <div id="quizArea" class="hidden">
+      <p id="progress"></p>
+      <div id="questionDisplay"></div>
+      <input type="number" id="answerInput">
+      <button id="validateButton">Valider</button>
+      <p id="feedback"></p>
+    </div>
+
+    <div id="resultArea" class="hidden">
+      <h2>Résultat</h2>
+      <p id="scoreSummary"></p>
+      <table id="scoreTable">
+        <thead>
+          <tr>
+            <th>Prénom</th>
+            <th>Tables</th>
+            <th>Score</th>
+            <th>Durée</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <footer style="text-align:center; margin-top:20px; font-size:0.9em; color:#888;">
+    Révision des tables – version 1.1
+  </footer>
+  <script src="script.js"></script>
+</body>
+</html>
