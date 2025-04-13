@@ -30,3 +30,76 @@ body {
 .highlight {
   background-color: #ffff99;
 }
+
+#startButton {
+  font-size: 1.5em;
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+#startButton:hover {
+  background-color: #45a049;
+}
+
+input, select, button {
+  font-size: 1.2em;
+}
+
+#validateButton {
+  margin-top: 10px;
+  font-size: 1.2em;
+  padding: 8px 16px;
+  border-radius: 6px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#validateButton:hover {
+  background-color: #1976D2;
+}
+
+#answerInput {
+  font-size: 1.4em;
+  width: 80px;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.feedback-positive {
+  color: green;
+  font-size: 1.3em;
+}
+
+.feedback-negative {
+  color: red;
+  font-size: 1.3em;
+}
+
+#quizArea {
+  transition: background-color 0.5s;
+}
+
+.progress-bar {
+  display: flex;
+  margin: 10px 0;
+  gap: 2px;
+}
+
+.progress-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ddd;
+}
+
+.progress-dot.correct {
+  background: #4CAF50;
+}
+.progress-dot.incorrect {
+  background: #F44336;
+}

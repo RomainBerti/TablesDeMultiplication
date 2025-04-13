@@ -1,9 +1,14 @@
 const tablesContainer = document.getElementById("tableSelectors");
-for (let i = 1; i <= 10; i++) {
-  const label = document.createElement("label");
-  label.innerHTML = `<input type="checkbox" value="${i}" checked> ${i}`;
-  tablesContainer.appendChild(label);
+function generateTableCheckboxes() {
+  tablesContainer.innerHTML = "";
+  for (let i = 1; i <= 10; i++) {
+    const label = document.createElement("label");
+    label.style.marginRight = "8px";
+    label.innerHTML = `<input type="checkbox" value="${i}" checked> ${i}`;
+    tablesContainer.appendChild(label);
+  }
 }
+generateTableCheckboxes();
 
 let questions = [], currentQuestion = 0, correctAnswers = 0, startTime = 0, playerName = "";
 
@@ -30,11 +35,17 @@ document.getElementById("startButton").onclick = () => {
   showQuestion();
 };
 
+const progressBar = document.createElement("div");
+progressBar.className = "progress-bar";
+document.getElementById("quizArea").prepend(progressBar);
+
 document.getElementById("validateButton").onclick = () => {
   const answer = parseInt(document.getElementById("answerInput").value);
   const { a, b, mode } = questions[currentQuestion];
   const correct = (mode === "multiplication") ? a * b : a + b;
   const feedback = document.getElementById("feedback");
+
+  questions[currentQuestion].correct = answer === correct;
 
   if (answer === correct) {
     correctAnswers++;
@@ -63,6 +74,24 @@ function showQuestion() {
   document.getElementById("answerInput").focus();
   document.getElementById("progress").textContent = `Question ${currentQuestion + 1} sur ${questions.length}`;
   document.getElementById("feedback").textContent = "";
+  document.getElementById("answerInput").onkeydown = function(event) {
+    if (event.key === "Enter") {
+      document.getElementById("validateButton").click();
+    }
+  };
+  updateProgressBar();
+}
+
+function updateProgressBar() {
+  progressBar.innerHTML = "";
+  for (let i = 0; i < questions.length; i++) {
+    const dot = document.createElement("div");
+    dot.className = "progress-dot";
+    if (i < currentQuestion) {
+      dot.classList.add(questions[i].correct ? "correct" : "incorrect");
+    }
+    progressBar.appendChild(dot);
+  }
 }
 
 function finishQuiz() {
@@ -88,7 +117,22 @@ function finishQuiz() {
 
   document.getElementById("quizArea").classList.add("hidden");
   document.getElementById("resultArea").classList.remove("hidden");
-  document.getElementById("scoreSummary").textContent = `${playerName}, tu as eu ${correctAnswers} bonnes réponses sur ${questions.length} en ${duration}.`;
+
+  let encouragement = "";
+  if (correctAnswers === questions.length) {
+    encouragement = "🏆 Tu as tout réussi ! Bravo champion·ne !";
+    document.getElementById("celebrationImage").src = "https://media.giphy.com/media/26FPGQKCzMc5sKpxC/giphy.gif";
+    document.getElementById("celebrationImage").style.display = "block";
+  } else if (correctAnswers >= questions.length * 0.75) {
+    encouragement = "🎉 Super score, continue comme ça !";
+    document.getElementById("celebrationImage").style.display = "none";
+  } else {
+    encouragement = "💪 Ne lâche pas, tu progresses !";
+    document.getElementById("celebrationImage").style.display = "none";
+  }
+
+  document.getElementById("scoreSummary").textContent =
+    `${playerName}, tu as eu ${correctAnswers} bonnes réponses sur ${questions.length} en ${duration}. ${encouragement}`;
 
   const tbody = document.querySelector("#scoreTable tbody");
   tbody.innerHTML = "";
@@ -102,3 +146,10 @@ function finishQuiz() {
     row.insertCell().textContent = r.date;
   });
 }
+
+document.getElementById("resetScoresButton").onclick = () => {
+  if (confirm("Es-tu sûr·e de vouloir effacer tout le classement ?")) {
+    localStorage.removeItem("quiz_history");
+    document.querySelector("#scoreTable tbody").innerHTML = "";
+  }
+};
