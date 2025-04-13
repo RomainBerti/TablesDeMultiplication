@@ -20,8 +20,33 @@
   {
     "score": 17,
     "total": 20,
+    "duration": 182.82,
+    "datetime": "2025-04-13 11:32:25",
+    "tables": [
+      3,
+      4,
+      5,
+      10
+    ]
+  },
+  {
+    "score": 17,
+    "total": 20,
     "duration": 193.52,
     "datetime": "2025-04-12 09:47:33"
+  },
+  {
+    "score": 16,
+    "total": 20,
+    "duration": 172.86,
+    "datetime": "2025-04-13 11:28:46",
+    "tables": [
+      2,
+      3,
+      4,
+      5,
+      10
+    ]
   },
   {
     "score": 14,
@@ -40,6 +65,26 @@
     "total": 3,
     "duration": 21.29,
     "datetime": "2025-04-12 09:54:00"
+  },
+  {
+    "score": 1,
+    "total": 1,
+    "duration": 3.89,
+    "datetime": "2025-04-13 15:27:41",
+    "tables": [
+      1
+    ],
+    "name": "Romain"
+  },
+  {
+    "score": 1,
+    "total": 1,
+    "duration": 4.32,
+    "datetime": "2025-04-13 15:28:38",
+    "tables": [
+      1
+    ],
+    "name": "Romain_2"
   },
   {
     "score": 1,

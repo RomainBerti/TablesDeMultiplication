@@ -11,7 +11,14 @@ from datetime import datetime
 class MultiplicationApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Révision des tables")
+        self.root.title("Révision des tables - v1.1")
+        self.user_name_var = tk.StringVar()
+        name_frame = tk.Frame(root)
+        name_frame.pack(pady=5)
+        tk.Label(name_frame, text="Prénom :", font=("Arial", 20)).pack(side="left")
+        self.name_entry = tk.Entry(name_frame, textvariable=self.user_name_var, font=("Arial", 20))
+        self.name_entry.pack(side="left")
+
         self.mode = tk.StringVar(value="multiplication")
         mode_frame = tk.Frame(root)
         mode_frame.pack(pady=10)
@@ -59,6 +66,10 @@ class MultiplicationApp:
             messagebox.showinfo("Aucun historique", "Aucun fichier de résultats à supprimer.")
 
     def start_quiz(self):
+        if not self.user_name_var.get().strip():
+            messagebox.showwarning("Attention", "Merci d’entrer ton prénom avant de commencer.")
+            return
+
         self.selected_tables = [i+1 for i, var in enumerate(self.table_vars) if var.get() == 1]
         self.nb_questions_total = int(self.nb_questions.get())
         self.current_question = 0
@@ -149,7 +160,8 @@ class MultiplicationApp:
             "total": self.nb_questions_total,
             "duration": duration,
             "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "tables": self.selected_tables
+            "tables": self.selected_tables,
+            "name": self.user_name_var.get()
         }
 
         results_file = "results.json" if self.mode.get() == "multiplication" else "results_addition.json"
@@ -182,19 +194,24 @@ class MultiplicationApp:
         historique_label = "Historique des tests de multiplication" if self.mode.get() == "multiplication" else "Historique des tests d'addition"
         tk.Label(result_window, text=historique_label, font=("Arial", 20, "underline")).pack(pady=(10, 2))
 
-        tree = ttk.Treeview(result_window, columns=("datetime", "tables", "score", "total", "duration"), show="headings")
+        tree = ttk.Treeview(result_window, columns=("datetime", "name", "tables", "score", "total", "duration"), show="headings")
         tree.heading("datetime", text="Date/Heure", anchor='center')
+        tree.heading("name", text="Prénom", anchor='center')
         tree.heading("tables", text="Tables", anchor='center')
         tree.heading("score", text="Score", anchor='center')
         tree.heading("total", text="Total", anchor='center')
         tree.heading("duration", text="Durée", anchor='center')
 
+        current_name = self.user_name_var.get()
         for r in results:
             minutes = int(r["duration"]) // 60
             seconds = int(r["duration"]) % 60
             formatted_duration = f"{minutes:02d}:{seconds:02d}"
             tables_str = ", ".join(str(t) for t in r.get("tables", []))
-            tree.insert("", "end", values=(r["datetime"], tables_str, r["score"], r["total"], formatted_duration))
+            row = tree.insert("", "end", values=(r["datetime"], r.get("name", ""), tables_str, r["score"], r["total"], formatted_duration))
+            if r.get("name") == current_name:
+                tree.item(row, tags=("current_user",))
+        tree.tag_configure("current_user", background="#ffff99")
 
         tree.pack(padx=10, pady=10)
 
