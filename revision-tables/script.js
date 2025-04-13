@@ -1,3 +1,4 @@
+
 const tablesContainer = document.getElementById("tableSelectors");
 function generateTableCheckboxes() {
   tablesContainer.innerHTML = "";
@@ -11,28 +12,45 @@ function generateTableCheckboxes() {
 generateTableCheckboxes();
 
 let questions = [], currentQuestion = 0, correctAnswers = 0, startTime = 0, playerName = "";
+let timerInterval = null;
+
+document.querySelectorAll('input[name="exerciseType"]').forEach(el => {
+  el.addEventListener("change", () => {
+    const isTimed = document.querySelector('input[name="exerciseType"]:checked').value === "timed";
+    document.getElementById("timerDurationSection").style.display = isTimed ? "block" : "none";
+    document.getElementById("fixedCountSection").style.display = isTimed ? "none" : "block";
+  });
+});
 
 document.getElementById("startButton").onclick = () => {
   const name = document.getElementById("nameInput").value.trim();
   if (!name) return alert("Merci d'entrer ton prénom !");
   const selectedTables = [...tablesContainer.querySelectorAll("input:checked")].map(cb => parseInt(cb.value));
   const mode = document.querySelector("input[name='mode']:checked").value;
+  const exerciseType = document.querySelector('input[name="exerciseType"]:checked').value;
   const questionCount = parseInt(document.getElementById("questionCount").value);
+  const timerMinutes = parseFloat(document.getElementById("timerDuration").value);
 
   if (!selectedTables.length) return alert("Choisis au moins une table !");
   playerName = name;
-  questions = Array.from({length: questionCount}, () => {
-    const a = selectedTables[Math.floor(Math.random() * selectedTables.length)];
-    const b = Math.floor(Math.random() * 10) + 1;
-    return { a, b, mode };
-  });
-
+  questions = [];
   currentQuestion = 0;
   correctAnswers = 0;
   startTime = Date.now();
   document.getElementById("quizArea").classList.remove("hidden");
   document.getElementById("resultArea").classList.add("hidden");
-  showQuestion();
+
+  if (exerciseType === "fixed") {
+    questions = Array.from({length: questionCount}, () => {
+      const a = selectedTables[Math.floor(Math.random() * selectedTables.length)];
+      const b = Math.floor(Math.random() * 10) + 1;
+      return { a, b, mode };
+    });
+    showQuestion();
+  } else {
+    startTimer(timerMinutes);
+    nextTimedQuestion(selectedTables, mode);
+  }
 };
 
 const progressBar = document.createElement("div");
@@ -56,15 +74,31 @@ document.getElementById("validateButton").onclick = () => {
     feedback.style.color = "red";
   }
 
+  const exerciseType = document.querySelector('input[name="exerciseType"]:checked').value;
+
   setTimeout(() => {
-    currentQuestion++;
-    if (currentQuestion < questions.length) {
-      showQuestion();
+    if (exerciseType === "timed") {
+      const selectedTables = [...document.querySelectorAll("#tableSelectors input:checked")].map(cb => parseInt(cb.value));
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      nextTimedQuestion(selectedTables, mode);
     } else {
-      finishQuiz();
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        finishQuiz();
+      }
     }
   }, answer === correct ? 1000 : 2000);
 };
+
+function nextTimedQuestion(selectedTables, mode) {
+  const a = selectedTables[Math.floor(Math.random() * selectedTables.length)];
+  const b = Math.floor(Math.random() * 10) + 1;
+  questions.push({ a, b, mode });
+  currentQuestion = questions.length - 1;
+  showQuestion();
+}
 
 function showQuestion() {
   const { a, b, mode } = questions[currentQuestion];
@@ -72,14 +106,26 @@ function showQuestion() {
   document.getElementById("questionDisplay").textContent = `${a} ${op} ${b} =`;
   document.getElementById("answerInput").value = "";
   document.getElementById("answerInput").focus();
-  document.getElementById("progress").textContent = `Question ${currentQuestion + 1} sur ${questions.length}`;
   document.getElementById("feedback").textContent = "";
+  updateProgressBar();
+
   document.getElementById("answerInput").onkeydown = function(event) {
     if (event.key === "Enter") {
       document.getElementById("validateButton").click();
     }
   };
-  updateProgressBar();
+}
+
+function startTimer(durationMinutes) {
+  let timeLeft = durationMinutes * 60;
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById("progress").textContent = `Temps restant : ${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}`;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      finishQuiz();
+    }
+  }, 1000);
 }
 
 function updateProgressBar() {
@@ -95,6 +141,11 @@ function updateProgressBar() {
 }
 
 function finishQuiz() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
   const durationSec = Math.floor((Date.now() - startTime) / 1000);
   const minutes = Math.floor(durationSec / 60);
   const seconds = durationSec % 60;
@@ -110,10 +161,12 @@ function finishQuiz() {
     tables: [...new Set(questions.map(q => q.a))].sort((a, b) => a - b).join(", ")
   };
 
-  const history = JSON.parse(localStorage.getItem("quiz_history") || "[]");
+  const exerciseType = document.querySelector('input[name="exerciseType"]:checked').value;
+  const storageKey = exerciseType === "timed" ? "quiz_history_timed" : "quiz_history";
+  const history = JSON.parse(localStorage.getItem(storageKey) || "[]");
   history.push(scoreRecord);
   history.sort((a, b) => b.score - a.score || a.duration.localeCompare(b.duration));
-  localStorage.setItem("quiz_history", JSON.stringify(history));
+  localStorage.setItem(storageKey, JSON.stringify(history));
 
   document.getElementById("quizArea").classList.add("hidden");
   document.getElementById("resultArea").classList.remove("hidden");
@@ -153,3 +206,10 @@ document.getElementById("resetScoresButton").onclick = () => {
     document.querySelector("#scoreTable tbody").innerHTML = "";
   }
 };
+
+document.querySelectorAll(".quick-time").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const val = parseFloat(btn.getAttribute("data-minutes"));
+    document.getElementById("timerDuration").value = val;
+  });
+});

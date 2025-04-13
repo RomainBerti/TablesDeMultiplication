@@ -1,22 +1,43 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Révision des tables</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Révision des tables – v1.3</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
     <h1>Révision des tables 🧠</h1>
-    
+
     <label for="nameInput">Prénom :</label>
-    <input type="text" id="nameInput" placeholder="Entre ton prénom">
+    <input type="text" id="nameInput" placeholder="Entre ton prénom" />
 
     <div class="section">
-      <p>Mode :</p>
-      <label><input type="radio" name="mode" value="multiplication" checked> Multiplication</label>
-      <label><input type="radio" name="mode" value="addition"> Addition</label>
+      <p>Opération :</p>
+      <label><input type="radio" name="mode" value="multiplication" checked /> Multiplication</label>
+      <label><input type="radio" name="mode" value="addition" /> Addition</label>
+    </div>
+
+    <div class="section">
+      <p>Type d’exercice :</p>
+      <label><input type="radio" name="exerciseType" value="fixed" checked /> Nombre de questions</label>
+      <label><input type="radio" name="exerciseType" value="timed" /> Contre la montre</label>
+    </div>
+
+    <div class="section" id="fixedCountSection">
+      <label for="questionCount">Nombre de questions :</label>
+      <input type="number" id="questionCount" value="10" min="1" max="50" />
+    </div>
+
+    <div class="section" id="timerDurationSection" style="display: none;">
+      <label for="timerDuration">Durée (minutes) :</label>
+    <div style="margin: 5px 0;">
+      <button type="button" class="quick-time" data-minutes="0.5">30 sec</button>
+      <button type="button" class="quick-time" data-minutes="1">1 min</button>
+      <button type="button" class="quick-time" data-minutes="2">2 min</button>
+    </div>
+      <input type="number" id="timerDuration" value="2" min="0.1" step="0.1" max="10" />
     </div>
 
     <div class="section">
@@ -24,23 +45,17 @@
       <div id="tableSelectors"></div>
     </div>
 
-    <div class="section">
-      <label for="questionCount">Nombre de questions :</label>
-      <input type="number" id="questionCount" value="10" min="1" max="50">
-    </div>
-
     <button id="startButton">Commencer</button>
 
     <div id="quizArea" class="hidden">
       <p id="progress"></p>
       <div id="questionDisplay"></div>
-      <input type="number" id="answerInput">
+      <input type="number" id="answerInput" />
       <button id="validateButton">Valider</button>
       <p id="feedback"></p>
     </div>
 
     <div id="resultArea" class="hidden">
-      <img id="celebrationImage" src="" alt="" style="display:none; max-width: 100%; margin-top: 20px;">
       <h2>Résultat</h2>
       <p id="scoreSummary"></p>
       <table id="scoreTable">
@@ -55,11 +70,13 @@
         </thead>
         <tbody></tbody>
       </table>
-    <button id="resetScoresButton" style="margin-top: 10px;">Réinitialiser le classement</button>
+      <button id="resetScoresButton" style="margin-top: 10px;">Réinitialiser le classement</button>
+      <img id="celebrationImage" src="" alt="" style="display:none; max-width: 100%; margin-top: 20px;" />
     </div>
   </div>
+
   <footer style="text-align:center; margin-top:20px; font-size:0.9em; color:#888;">
-    Révision des tables – version 1.2
+    Révision des tables – version 1.3
   </footer>
   <script src="script.js"></script>
 </body>
